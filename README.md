@@ -15,29 +15,28 @@ one) to recover from downtime quickly. (See the docs for `NewFrom()` for caveats
 
 ### Installation
 
-`go get github.com/patrickmn/go-cache`
+`go get github.com/thanhpk/go-cache`
 
 ### Usage
 
 ```go
 import (
 	"fmt"
-	"github.com/patrickmn/go-cache"
+	"github.com/thanhpk/go-cache"
 	"time"
 )
 
 func main() {
-	// Create a cache with a default expiration time of 5 minutes, and which
-	// purges expired items every 10 minutes
-	c := cache.New(5*time.Minute, 10*time.Minute)
+	// Create a cache with a default expiration time of 5 minutes
+	c := cache.New(5*time.Minute)
 
 	// Set the value of the key "foo" to "bar", with the default expiration time
-	c.Set("foo", "bar", cache.DefaultExpiration)
+	c.Set("foo", "bar")
 
-	// Set the value of the key "baz" to 42, with no expiration time
-	// (the item won't be removed until it is re-set, or removed using
+	// Set the value of the key "baz" to 42, with the expiration time
+	// is 1 minute. (the item won't be removed until it is expired, re-set, or removed using
 	// c.Delete("baz")
-	c.Set("baz", 42, cache.NoExpiration)
+	c.SetWithExpire("baz", 42, 1 * time.Minute)
 
 	// Get the string associated with the key "foo" from the cache
 	foo, found := c.Get("foo")
@@ -80,4 +79,4 @@ func main() {
 
 ### Reference
 
-`godoc` or [http://godoc.org/github.com/patrickmn/go-cache](http://godoc.org/github.com/patrickmn/go-cache)
+`godoc` or [https://godoc.org/github.com/thanhpk/go-cache](https://godoc.org/github.com/thanhpk/go-cache)

@@ -45,7 +45,7 @@ type cache struct {
 	janitor           *janitor
 }
 
-// Add an item to the cache, replacing any existing item. If the duration is 0
+// Set adds an item to the cache, replacing any existing item. If the duration is 0
 // (DefaultExpiration), the cache's default expiration time is used. If it is -1
 // (NoExpiration), the item never expires.
 func (c *cache) SetWithExpire(k string, x interface{}, d time.Duration) {
@@ -68,7 +68,7 @@ func (c *cache) SetWithExpire(k string, x interface{}, d time.Duration) {
 	c.mu.Unlock()
 }
 
-// for benchmarking purpose
+// only for benchmarking purpose.
 func (c *cache) set(k string, x interface{}, d time.Duration) {
 	var e int64
 	if d == DefaultExpiration {
@@ -83,7 +83,7 @@ func (c *cache) set(k string, x interface{}, d time.Duration) {
 	}
 }
 
-// Add an item to the cache, replacing any existing item, using the default
+// Set adds an item to the cache, replacing any existing item, using the default
 // expiration.
 func (c *cache) Set(k string, x interface{}) {
 	c.SetWithExpire(k, x, DefaultExpiration)
