@@ -15,14 +15,14 @@ one) to recover from downtime quickly. (See the docs for `NewFrom()` for caveats
 
 ### Installation
 
-`go get github.com/thanhpk/go-cache`
+`go get github.com/di3upham/go-cache`
 
 ### Usage
 
 ```go
 import (
 	"fmt"
-	"github.com/thanhpk/go-cache"
+	"github.com/di3upham/go-cache"
 	"time"
 )
 
@@ -74,9 +74,22 @@ func main() {
 		foo := x.(*MyStruct)
 			// ...
 	}
+
+	// Set multiple items
+	entries := make(map[string]interface{})
+	entries["k1"] = "v1"
+	entries["k2"] = "v2"
+	entries["k3"] = "v3"
+	c.SetMultiple(entries)
+
+	itemm := c.GetMultiple([]string{"k1", "k3"})
+	for k, x := range itemm {
+		foo := x.(string)
+		// ...
+	}
 }
 ```
 
 ### Reference
 
-`godoc` or [https://godoc.org/github.com/thanhpk/go-cache](https://godoc.org/github.com/thanhpk/go-cache)
+`godoc` or [https://godoc.org/github.com/di3upham/go-cache](https://godoc.org/github.com/di3upham/go-cache)
