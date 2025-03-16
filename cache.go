@@ -68,6 +68,28 @@ func (c *cache) SetWithExpire(k string, x interface{}, d time.Duration) {
 	c.mu.Unlock()
 }
 
+func (c *cache) SetMultipleWithExpire(entries map[string]interface{}, d time.Duration) {
+	// "Inlining" of set
+	var e int64
+	if d == DefaultExpiration {
+		d = c.defaultExpiration
+	}
+	if d > 0 {
+		e = time.Now().Add(d).UnixNano()
+	}
+	c.mu.Lock()
+	for k, x := range entries {
+		// _, found := c.get(k)
+		c.items[k] = Item{
+			Object:     x,
+			Expiration: e,
+		}
+	}
+	// TODO: Calls to mu.Unlock are currently not deferred because defer
+	// adds ~200 ns (as of go1.)
+	c.mu.Unlock()
+}
+
 // only for benchmarking purpose.
 func (c *cache) set(k string, x interface{}, d time.Duration) {
 	var e int64
@@ -89,6 +111,10 @@ func (c *cache) Set(k string, x interface{}) {
 	c.SetWithExpire(k, x, DefaultExpiration)
 }
 
+func (c *cache) SetMultiple(entries map[string]interface{}) {
+	c.SetMultipleWithExpire(entries, DefaultExpiration)
+}
+
 // Get an item from the cache. Returns the item or nil, and a bool indicating
 // whether the key was found.
 func (c *cache) Get(k string) (interface{}, bool) {
@@ -99,14 +125,34 @@ func (c *cache) Get(k string) (interface{}, bool) {
 		c.mu.RUnlock()
 		return nil, false
 	}
-	if item.Expiration > 0 {
-		if time.Now().UnixNano() > item.Expiration {
-			c.mu.RUnlock()
-			return nil, false
-		}
+	if item.Expiration > 0 && time.Now().UnixNano() > item.Expiration {
+		c.mu.RUnlock()
+		return nil, false
 	}
 	c.mu.RUnlock()
 	return item.Object, true
+}
+
+func (c *cache) GetMultiple(keys []string) map[string]interface{} {
+	if len(keys) == 0 {
+		return nil
+	}
+
+	itemm := make(map[string]interface{})
+	nowns := time.Now().UnixNano()
+	c.mu.RLock()
+	for _, k := range keys {
+		item, found := c.items[k]
+		if !found {
+			continue
+		}
+		if item.Expiration > 0 && nowns > item.Expiration {
+			continue
+		}
+		itemm[k] = item
+	}
+	c.mu.RUnlock()
+	return itemm
 }
 
 func (c *cache) get(k string) (interface{}, bool) {
@@ -115,10 +161,8 @@ func (c *cache) get(k string) (interface{}, bool) {
 		return nil, false
 	}
 	// "Inlining" of Expired
-	if item.Expiration > 0 {
-		if time.Now().UnixNano() > item.Expiration {
-			return nil, false
-		}
+	if item.Expiration > 0 && time.Now().UnixNano() > item.Expiration {
+		return nil, false
 	}
 	return item.Object, true
 }
